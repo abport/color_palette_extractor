@@ -9,6 +9,17 @@ A web application that extracts the most prominent colors from an image and disp
 3.  Upload an image by clicking on the "Upload Image" button
 4.  The extracted color palette will be displayed in a color swatch design
 
+
+## Dependencies
+
+This app uses the following third-party libraries:
+
+-   [Color Thief](https://lokeshdhakar.com/projects/color-thief/) - for extracting colors from images
+
+## How it works
+
+When an image is uploaded, the Color Thief library is used to extract the 20 most prominent colors from the image. These colors are displayed in a grid below the image preview.
+
 ## Features
 
 -   User-friendly interface that allows for easy image uploads
