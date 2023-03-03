@@ -1,88 +1,53 @@
-// Select the input element with id "image-input" and store it in the variable "imageInput"
+// This line finds the HTML element with the ID "image-input" and saves it in a variable called imageInput.
 const imageInput = document.querySelector("#image-input");
 
-// Select the element with id "color-palette" and store it in the variable "colorPalette"
+// This line finds the HTML element with the ID "color-palette" and saves it in a variable called colorPalette.
 const colorPalette = document.querySelector("#color-palette");
 
-// Add an event listener to the imageInput that listens for a "change" event
-imageInput.addEventListener("change", function () {
-  // Create a new Image object and store it in the variable "image"
-  const image = new Image();
+// This line creates a new ColorThief object, which is a library that helps extract colors from images.
+const colorThief = new ColorThief();
 
-  // Set the source of the image to the file selected in the input
+// This line sets up an event listener on the imageInput element, which listens for a "change" event, like when someone selects a file to upload.
+imageInput.addEventListener("change", function () {
+  // This line creates a new Image object, which is a JavaScript object that represents an image.
+  const image = new Image();
+  // This line sets the src attribute of the image object to be the URL of the file that was just selected in the imageInput element.
   image.src = URL.createObjectURL(this.files[0]);
 
-  // Add an event listener to the image that listens for it to be loaded
+  // This line sets up an event listener on the image object, which listens for the image to finish loading.
   image.onload = function () {
-    // Create a new canvas element and store it in the variable "canvas"
-    const canvas = document.createElement("canvas");
-
-    // Set the width of the canvas to the width of the image
-    canvas.width = image.width;
-
-    // Set the height of the canvas to the height of the image
-    canvas.height = image.height;
-
-    // Get the 2D drawing context of the canvas and store it in the variable "context"
-    const context = canvas.getContext("2d");
-
-    // Draw the image on the canvas
-    context.drawImage(image, 0, 0);
-
-    // Get the image data from the canvas and store it in the variable "imageData"
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Get the array of pixel data from the imageData and store it in the variable "data"
-    const data = imageData.data;
-
-    // Create an object to store the color information and store it in the variable "colorMap"
-    const colorMap = {};
-
-    // Loop through each pixel in the "data" array
-    for (let i = 0; i < data.length; i += 4) {
-      // Get the red, green, blue, and alpha values for the current pixel
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const a = data[i + 3];
-
-      // Create a string with the RGB values of the current pixel
-      const rgb = `rgb(${r}, ${g}, ${b})`;
-
-      // Create a string with the HEX values of the current pixel
-      const hex =
-        "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-
-      // Check if the RGB value is already in the "colorMap" object
-      if (!colorMap[rgb]) {
-        // If not, add the RGB value as a key in the "colorMap" object with its information
-        colorMap[rgb] = {
-          rgb,
-          hex,
-          count: 1,
-        };
-      } else {
-        colorMap[rgb].count += 1; // If the RGB value is already in the "colorMap" object, increment its count by 1
-      }
-    }
-    const sortedColors = Object.values(colorMap).sort(
-      (a, b) => b.count - a.count
-    );
-    // Sort the colorMap object based on the count property in descending order
+    // This line uses the ColorThief library to extract a palette of colors from the image, containing the 20 most prominent colors.
+    const palette = colorThief.getPalette(image, 20);
+    // This line clears the HTML content of the colorPalette element, so that we can replace it with the new color swatches.
     colorPalette.innerHTML = "";
-    // Empty the colorPalette element to prepare it for the sorted colors
-    for (const color of sortedColors) {
+    // This line loops through each color in the palette, and runs some code for each color.
+    palette.forEach(function (color) {
+      // This line converts the RGB values of the color to a hexadecimal value, which is a way of representing colors in web design.
+      const hex = rgbToHex(color[0], color[1], color[2]);
+      // These lines create a new HTML element (div) to represent a color swatch, and sets its background color to the RGB value of the color.
+      // It also adds a class name to the element and sets its inner HTML to show the RGB and hexadecimal values of the color.
       const colorSwatch = document.createElement("div");
-      colorSwatch.style.backgroundColor = color.rgb;
-      // Set the background color of the colorSwatch element to the RGB value
+      colorSwatch.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
       colorSwatch.classList.add("color-swatch");
       colorSwatch.innerHTML = `
-              <div>${color.rgb}</div>
-              <div>${color.hex}</div>
+              <div>rgb(${color[0]}, ${color[1]}, ${color[2]})</div>
+              <div>${hex}</div>
             `;
-      // Create two child elements for the colorSwatch to display the RGB and HEX values of the color
+      // This line adds the new color swatch element to the colorPalette element, so that it appears on the page.
       colorPalette.appendChild(colorSwatch);
-      // Add the colorSwatch element to the colorPalette
-    }
+    });
   };
 });
+
+// This is a separate function that takes the RGB values of a color and returns its hexadecimal value.
+function rgbToHex(r, g, b) {
+  return (
+    "#" +
+    [r, g, b]
+      .map(function (x) {
+        const hex = x.toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      })
+      .join("")
+  );
+}
